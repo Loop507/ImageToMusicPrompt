@@ -1,68 +1,50 @@
 import streamlit as st
-from PIL import Image
-import random
+import re
 
-# Titolo dell'app
-st.set_page_config(page_title="Image to Music Prompt")
-st.title("🎵 Generatore di Prompt Musicali basati su Immagini")
-st.write("Carica una foto e ottieni ispirazione musicale!")
+st.title("Generatore di prompt musicali basati su immagini by Loop507")
+st.write("Carica una foto e ricevi descrizioni e prompt musicali ispirati all'immagine.")
 
-# Caricamento immagine
-uploaded_file = st.file_uploader("📷 Carica un'immagine", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Carica un'immagine", type=["png", "jpg", "jpeg"])
+
+def analyze_image(file):
+    # Placeholder analisi immagine
+    return "Auto sportiva rossa su strada asfaltata in una giornata soleggiata."
+
+def generate_music_prompts(description, genre="Varied"):
+    prompts = [
+        f"Suono ambientale naturale ispirato a {description} - suoni di vento, foglie, acqua",
+        f"Musica elettronica con vibe futuristica e glitch, ispirata a {description}",
+        f"Composizione classica con archi e pianoforte che riflette {description}"
+    ]
+    return prompts
+
+def generate_hashtags(prompts):
+    hashtags = set()
+    for prompt in prompts:
+        # Estrae parole chiave rimuovendo punteggiatura e parole troppo corte
+        words = re.findall(r'\b\w{4,}\b', prompt.lower())
+        for word in words:
+            hashtags.add(f"#{word}")
+    return " ".join(sorted(hashtags))
 
 if uploaded_file:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Immagine caricata", use_column_width=True)
-
-    # Simulazione di analisi immagine
-    st.subheader("🎼 Descrizione del suono suggerito")
-
-    categorie = [
-        {
-            "tipo": "Suono naturale",
-            "descrizione": "🌿 Ambienti sonori naturali come vento, pioggia o foglie che si muovono.",
-            "prompt": [
-                "ambient forest soundscape with gentle wind and leaves",
-                "natural sound of flowing water with distant thunder",
-                "minimalist bird calls in an open field, atmospheric"
-            ]
-        },
-        {
-            "tipo": "Elettronica",
-            "descrizione": "🎛️ Ritmi sintetici, texture digitali, vibrazioni urbane.",
-            "prompt": [
-                "glitchy electronic loop with reverb and distortion",
-                "slow techno beat with deep bass and modular synths",
-                "experimental ambient noise with granular textures"
-            ]
-        },
-        {
-            "tipo": "Classica / Orchestrale",
-            "descrizione": "🎻 Armonie cinematiche, strumenti acustici, atmosfera emotiva.",
-            "prompt": [
-                "melancholic piano with soft strings, cinematic mood",
-                "orchestral crescendo with brass and violins",
-                "solo cello with reverb, nostalgic ambient feel"
-            ]
-        },
-        {
-            "tipo": "Noise / Sperimentale",
-            "descrizione": "⚡ Rumori astratti, texture crude, suoni destrutturati.",
-            "prompt": [
-                "white noise burst with crackles and broken rhythm",
-                "industrial ambience with metallic scraping and hums",
-                "chaotic synth stabs and distorted textures"
-            ]
-        }
-    ]
-
-    scelta = random.choice(categorie)
-    st.markdown(f"**Tipo di suono:** {scelta['tipo']}")
-    st.markdown(f"**Descrizione:** {scelta['descrizione']}")
-    st.markdown("**🎧 Prompt suggeriti per generare musica:**")
-
-    for i, prompt in enumerate(scelta['prompt'], 1):
-        st.code(f"{i}. {prompt}", language="text")
-
+    st.image(uploaded_file, caption='Immagine caricata', use_column_width=True)
+    description = analyze_image(uploaded_file)
+    
+    st.subheader("Descrizione generata:")
+    st.info(description)
+    
+    prompts = generate_music_prompts(description)
+    
+    st.subheader("Prompt musicali generati:")
+    for i, prompt in enumerate(prompts, 1):
+        st.code(f"{i}. {prompt}", language=None)
+    
+    hashtags = generate_hashtags(prompts)
+    st.subheader("Hashtag suggeriti:")
+    st.write(hashtags)
+    
+    all_prompts = "\n".join(prompts)
+    st.download_button("Scarica i prompt generati", all_prompts, file_name="music_prompts.txt", mime="text/plain")
 else:
-    st.info("Carica un'immagine per iniziare.")
+    st.warning("Carica un'immagine per iniziare.")
