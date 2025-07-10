@@ -1,30 +1,32 @@
 import streamlit as st
 from PIL import Image
-import requests
-from io import BytesIO
+from transformers import BlipProcessor, BlipForConditionalGeneration
+import torch
 
-# Funzione fittizia per simulare descrizione dall'immagine (sostituisci con la tua API o modello)
-def get_image_description(image):
-    # Questa è una simulazione, nella realtà userai un modello o API di analisi immagine
-    # Esempio con descrizione ripetuta da correggere:
-    return "a microwave with a bowl of fruit and a bowl of fruit"
+@st.cache_resource(show_spinner=False)
+def load_model():
+    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+    return processor, model
 
-def clean_description(text):
-    words = text.split()
-    for i in range(len(words) - 1):
-        if words[i] == words[i+1]:
-            return " ".join(words[:i+1])
-    return text
+def get_image_description(image, processor, model):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+
+    if image.mode != "RGB":
+        image = image.convert("RGB")
+
+    inputs = processor(image, return_tensors="pt").to(device)
+    out = model.generate(**inputs)
+    description = processor.decode(out[0], skip_special_tokens=True)
+    return description
 
 def generate_prompts(description):
-    # Pulisce la descrizione da ripetizioni
-    clean_desc = clean_description(description)
+    prompt1 = f"Componi un brano ispirato a questa scena, stile drone ipnotico, atmosfera sospesa, ambientato in un paesaggio simile a: {description}"
+    prompt2 = f"Immagina una soundscape naturale, con suoni ambientali (vento, acqua, foglie), ispirata a: {description}"
+    prompt3 = f"Genera musica elettronica glitch sperimentale, con ritmo frastagliato, basata sulla scena: {description}"
 
-    prompt1 = f"Componi un brano ispirato a questa scena, stile drone ipnotico, atmosfera sospesa, ambientato in un paesaggio simile a: {clean_desc}"
-    prompt2 = f"Immagina una soundscape naturale, con suoni ambientali (vento, acqua, foglie), ispirata a: {clean_desc}"
-    prompt3 = f"Genera musica elettronica glitch sperimentale, con ritmo frastagliato, basata sulla scena: {clean_desc}"
-
-    return clean_desc, [prompt1, prompt2, prompt3]
+    return description, [prompt1, prompt2, prompt3]
 
 st.title("Generatore di prompt musicali basati su immagini by Loop507")
 
@@ -36,7 +38,8 @@ if uploaded_file is not None:
 
     if st.button("Genera descrizione e prompt musicali"):
         with st.spinner('Analizzando immagine e generando prompt...'):
-            description = get_image_description(image)
+            processor, model = load_model()
+            description = get_image_description(image, processor, model)
             description, prompts = generate_prompts(description)
 
             st.subheader("Descrizione immagine:")
@@ -46,6 +49,5 @@ if uploaded_file is not None:
             for i, prompt in enumerate(prompts, 1):
                 st.write(f"Prompt {i}: {prompt}")
 
-            # opzionale: generazione riga hashtag sintetici
             hashtags = " ".join(["#musica", "#soundscape", "#drone", "#glitch", "#ambient"])
             st.write(f"Hashtag suggeriti: {hashtags}")
