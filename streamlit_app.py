@@ -1,50 +1,43 @@
 import streamlit as st
-import re
+from PIL import Image
+import torch
+from transformers import BlipProcessor, BlipForConditionalGeneration
+import random
 
-st.title("Generatore di prompt musicali basati su immagini by Loop507")
-st.write("Carica una foto e ricevi descrizioni e prompt musicali ispirati all'immagine.")
+# Titolo
+st.set_page_config(page_title="Generatore di Prompt Musicali – by Loop507", layout="centered")
+st.title("🎶 Generatore di Prompt Musicali basati su immagini – by Loop507")
 
-uploaded_file = st.file_uploader("Carica un'immagine", type=["png", "jpg", "jpeg"])
-
-def analyze_image(file):
-    # Placeholder analisi immagine
-    return "Auto sportiva rossa su strada asfaltata in una giornata soleggiata."
-
-def generate_music_prompts(description, genre="Varied"):
-    prompts = [
-        f"Suono ambientale naturale ispirato a {description} - suoni di vento, foglie, acqua",
-        f"Musica elettronica con vibe futuristica e glitch, ispirata a {description}",
-        f"Composizione classica con archi e pianoforte che riflette {description}"
-    ]
-    return prompts
-
-def generate_hashtags(prompts):
-    hashtags = set()
-    for prompt in prompts:
-        # Estrae parole chiave rimuovendo punteggiatura e parole troppo corte
-        words = re.findall(r'\b\w{4,}\b', prompt.lower())
-        for word in words:
-            hashtags.add(f"#{word}")
-    return " ".join(sorted(hashtags))
-
+# Caricamento immagine
+uploaded_file = st.file_uploader("Carica un'immagine", type=["jpg", "png", "jpeg"])
 if uploaded_file:
-    st.image(uploaded_file, caption='Immagine caricata', use_column_width=True)
-    description = analyze_image(uploaded_file)
-    
-    st.subheader("Descrizione generata:")
-    st.info(description)
-    
-    prompts = generate_music_prompts(description)
-    
-    st.subheader("Prompt musicali generati:")
-    for i, prompt in enumerate(prompts, 1):
-        st.code(f"{i}. {prompt}", language=None)
-    
-    hashtags = generate_hashtags(prompts)
-    st.subheader("Hashtag suggeriti:")
-    st.write(hashtags)
-    
-    all_prompts = "\n".join(prompts)
-    st.download_button("Scarica i prompt generati", all_prompts, file_name="music_prompts.txt", mime="text/plain")
-else:
-    st.warning("Carica un'immagine per iniziare.")
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Immagine caricata", use_column_width=True)
+
+    # Caricamento modello di captioning
+    with st.spinner("Analisi dell'immagine..."):
+        processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+        model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+        inputs = processor(images=image, return_tensors="pt")
+        out = model.generate(**inputs)
+        description = processor.decode(out[0], skip_special_tokens=True)
+
+    st.subheader("📝 Descrizione visiva")
+    st.write(description)
+
+    # Tipologie musicali random in base alla descrizione
+    generi = ["musica elettronica glitch", "soundscape naturale", "ambient sperimentale", "melodia classica malinconica", "rumore industriale", "drone ipnotico"]
+    selezionati = random.sample(generi, 3)
+
+    # Generazione prompt musicali
+    st.subheader("🎼 Prompt Musicali Generati")
+    for i, g in enumerate(selezionati, 1):
+        st.markdown(f"**Prompt {i}:** Componi un brano ispirato a questa scena, stile: _{g}_, ambientato in un paesaggio simile a: _{description}_")
+
+    # Hashtag generici + dinamici
+    base_tags = ["#musicgenerator", "#aigenerated", "#sounddesign", "#loop507", "#visualsound"]
+    descr_tags = [f"#{w.lower()}" for w in description.split() if w.isalpha() and len(w) > 3][:5]
+    all_tags = base_tags + descr_tags
+
+    st.subheader("🔖 Hashtag suggeriti")
+    st.code(" ".join(all_tags), language="markdown")
