@@ -3,51 +3,52 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForConditionalGeneration
 import torch
 
+# Caricamento modello e processor BLIP (meglio caricarli fuori funzione per efficienza)
 @st.cache_resource(show_spinner=False)
 def load_model():
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
     return processor, model
 
-def get_image_description(image, processor, model):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.to(device)
+processor, model = load_model()
 
-    if image.mode != "RGB":
-        image = image.convert("RGB")
-
-    inputs = processor(image, return_tensors="pt").to(device)
-    out = model.generate(**inputs)
-    description = processor.decode(out[0], skip_special_tokens=True)
-    return description
-
-def generate_prompts(description):
-    prompt1 = f"Componi un brano ispirato a questa scena, stile drone ipnotico, atmosfera sospesa, ambientato in un paesaggio simile a: {description}"
-    prompt2 = f"Immagina una soundscape naturale, con suoni ambientali (vento, acqua, foglie), ispirata a: {description}"
-    prompt3 = f"Genera musica elettronica glitch sperimentale, con ritmo frastagliato, basata sulla scena: {description}"
-
-    return description, [prompt1, prompt2, prompt3]
+st.set_page_config(page_title="Generatore di prompt musicali by Loop507", layout="centered")
 
 st.title("Generatore di prompt musicali basati su immagini by Loop507")
 
 uploaded_file = st.file_uploader("Carica un'immagine", type=["jpg", "jpeg", "png"])
 
+def generate_description(image):
+    # Prepara l'immagine per il modello
+    inputs = processor(image, return_tensors="pt")
+    out = model.generate(**inputs)
+    description = processor.decode(out[0], skip_special_tokens=True)
+    return description
+
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption='Immagine caricata', use_column_width=True)
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Immagine caricata", use_column_width=True)
 
-    if st.button("Genera descrizione e prompt musicali"):
-        with st.spinner('Analizzando immagine e generando prompt...'):
-            processor, model = load_model()
-            description = get_image_description(image, processor, model)
-            description, prompts = generate_prompts(description)
+    with st.spinner("Analisi in corso..."):
+        description = generate_description(image)
+    
+    st.subheader("Descrizione immagine:")
+    st.write(description)
 
-            st.subheader("Descrizione immagine:")
-            st.write(description)
+    # Prompt musicali distinti, senza ripetere la descrizione nel testo, ma usandola solo come riferimento finale
+    prompt_styles = [
+        "drone ipnotico, atmosfera sospesa",
+        "soundscape naturale, suoni ambientali (vento, acqua, foglie)",
+        "musica elettronica glitch sperimentale, ritmo frastagliato"
+    ]
 
-            st.subheader("Prompt musicali generati:")
-            for i, prompt in enumerate(prompts, 1):
-                st.write(f"Prompt {i}: {prompt}")
+    st.subheader("Prompt musicali generati:")
 
-            hashtags = " ".join(["#musica", "#soundscape", "#drone", "#glitch", "#ambient"])
-            st.write(f"Hashtag suggeriti: {hashtags}")
+    for i, style in enumerate(prompt_styles, start=1):
+        prompt = f"Prompt {i}: Componi un brano in stile {style}, basato sulla scena descritta."
+        st.write(prompt)
+
+    # Hashtag suggeriti statici ma coerenti
+    hashtags = "#musica #soundscape #drone #glitch #ambient"
+    st.subheader("Hashtag suggeriti:")
+    st.write(hashtags)
