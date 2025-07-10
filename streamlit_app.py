@@ -1,43 +1,51 @@
 import streamlit as st
 from PIL import Image
-import torch
-from transformers import BlipProcessor, BlipForConditionalGeneration
-import random
+import requests
+from io import BytesIO
 
-# Titolo
-st.set_page_config(page_title="Generatore di Prompt Musicali – by Loop507", layout="centered")
-st.title("🎶 Generatore di Prompt Musicali basati su immagini – by Loop507")
+# Funzione fittizia per simulare descrizione dall'immagine (sostituisci con la tua API o modello)
+def get_image_description(image):
+    # Questa è una simulazione, nella realtà userai un modello o API di analisi immagine
+    # Esempio con descrizione ripetuta da correggere:
+    return "a microwave with a bowl of fruit and a bowl of fruit"
 
-# Caricamento immagine
-uploaded_file = st.file_uploader("Carica un'immagine", type=["jpg", "png", "jpeg"])
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Immagine caricata", use_column_width=True)
+def clean_description(text):
+    words = text.split()
+    for i in range(len(words) - 1):
+        if words[i] == words[i+1]:
+            return " ".join(words[:i+1])
+    return text
 
-    # Caricamento modello di captioning
-    with st.spinner("Analisi dell'immagine..."):
-        processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-        model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
-        inputs = processor(images=image, return_tensors="pt")
-        out = model.generate(**inputs)
-        description = processor.decode(out[0], skip_special_tokens=True)
+def generate_prompts(description):
+    # Pulisce la descrizione da ripetizioni
+    clean_desc = clean_description(description)
 
-    st.subheader("📝 Descrizione visiva")
-    st.write(description)
+    prompt1 = f"Componi un brano ispirato a questa scena, stile drone ipnotico, atmosfera sospesa, ambientato in un paesaggio simile a: {clean_desc}"
+    prompt2 = f"Immagina una soundscape naturale, con suoni ambientali (vento, acqua, foglie), ispirata a: {clean_desc}"
+    prompt3 = f"Genera musica elettronica glitch sperimentale, con ritmo frastagliato, basata sulla scena: {clean_desc}"
 
-    # Tipologie musicali random in base alla descrizione
-    generi = ["musica elettronica glitch", "soundscape naturale", "ambient sperimentale", "melodia classica malinconica", "rumore industriale", "drone ipnotico"]
-    selezionati = random.sample(generi, 3)
+    return clean_desc, [prompt1, prompt2, prompt3]
 
-    # Generazione prompt musicali
-    st.subheader("🎼 Prompt Musicali Generati")
-    for i, g in enumerate(selezionati, 1):
-        st.markdown(f"**Prompt {i}:** Componi un brano ispirato a questa scena, stile: _{g}_, ambientato in un paesaggio simile a: _{description}_")
+st.title("Generatore di prompt musicali basati su immagini by Loop507")
 
-    # Hashtag generici + dinamici
-    base_tags = ["#musicgenerator", "#aigenerated", "#sounddesign", "#loop507", "#visualsound"]
-    descr_tags = [f"#{w.lower()}" for w in description.split() if w.isalpha() and len(w) > 3][:5]
-    all_tags = base_tags + descr_tags
+uploaded_file = st.file_uploader("Carica un'immagine", type=["jpg", "jpeg", "png"])
 
-    st.subheader("🔖 Hashtag suggeriti")
-    st.code(" ".join(all_tags), language="markdown")
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption='Immagine caricata', use_column_width=True)
+
+    if st.button("Genera descrizione e prompt musicali"):
+        with st.spinner('Analizzando immagine e generando prompt...'):
+            description = get_image_description(image)
+            description, prompts = generate_prompts(description)
+
+            st.subheader("Descrizione immagine:")
+            st.write(description)
+
+            st.subheader("Prompt musicali generati:")
+            for i, prompt in enumerate(prompts, 1):
+                st.write(f"Prompt {i}: {prompt}")
+
+            # opzionale: generazione riga hashtag sintetici
+            hashtags = " ".join(["#musica", "#soundscape", "#drone", "#glitch", "#ambient"])
+            st.write(f"Hashtag suggeriti: {hashtags}")
