@@ -18,7 +18,7 @@ if uploaded_file:
     processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
     model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-    # Generazione descrizione
+    # Generazione descrizione immagine
     inputs = processor(image, return_tensors="pt")
     with torch.no_grad():
         out = model.generate(**inputs)
@@ -27,29 +27,28 @@ if uploaded_file:
     st.markdown("### Descrizione immagine:")
     st.write(description)
 
-    # Set di atmosfere musicali possibili
+    # Set ampio di atmosfere musicali
     atmosphere_templates = [
-        "Atmosfera drone ipnotico, texture ambient e lente trasformazioni sonore",
-        "Atmosfera soundscape naturale, vento tra gli alberi, acqua che scorre, suoni di foglie",
-        "Atmosfera glitch elettronica sperimentale, ritmo frastagliato e suoni distorti",
-        "Atmosfera classica minimale, piano delicato e silenzi contemplativi",
-        "Atmosfera noise pulsante, caos controllato e distorsione ritmica",
-        "Atmosfera synthwave nostalgica, con toni retrò e malinconia luminosa",
-        "Atmosfera ambient scura, rumori profondi e riverberi avvolgenti",
-        "Atmosfera techno astratta, pattern ripetitivi e struttura liquida",
-        "Atmosfera jazz liquido, basso rotondo e fiati leggeri",
-        "Atmosfera cinematica, archi sospesi e senso di attesa"
+        "Drone ipnotico, texture ambient e lente trasformazioni sonore",
+        "Soundscape naturale, vento tra gli alberi, acqua che scorre, suoni di foglie",
+        "Glitch elettronico sperimentale, ritmo frastagliato e suoni distorti",
+        "Classica minimale, piano delicato e silenzi contemplativi",
+        "Noise pulsante, caos controllato e distorsione ritmica",
+        "Synthwave nostalgica, con toni retrò e malinconia luminosa",
+        "Ambient scuro, rumori profondi e riverberi avvolgenti",
+        "Techno astratta, pattern ripetitivi e struttura liquida",
+        "Jazz liquido, basso rotondo e fiati leggeri",
+        "Cinematica, archi sospesi e senso di attesa"
     ]
 
-    # Scelta random di 3 atmosfere diverse
+    # Scelta casuale di 3 atmosfere diverse
     atmospheres = random.sample(atmosphere_templates, 3)
 
     # Mostra le 3 atmosfere
-    st.markdown("### Prompt musicali generati:")
-    for i, prompt in enumerate(atmospheres, 1):
-        st.markdown(f"**Atmosfera {i}:** {prompt}")
+    st.markdown("### Atmosfere musicali generate:")
+    for mood in atmospheres:
+        st.markdown(f"- {mood}")
 
-    # Hashtag finali
-    hashtags = "#musica #atmosfera #sounddesign #AIart #musicprompt #image2music"
+    # Hashtag
     st.markdown("### Hashtag suggeriti:")
-    st.code(hashtags)
+    st.code("#musica #atmosfera #sounddesign #AIart #musicprompt #image2music")
