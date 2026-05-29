@@ -8,15 +8,23 @@ st.set_page_config(page_title="Generatore di Prompt Musicali - Loop507", layout=
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap');
-    html, body, [class*="css"] { font-family: 'Space Mono', monospace; background-color: #0a0a0a; color: #e8e8e0; }
-    .stApp { background-color: #0a0a0a; }
-    h1, h2, h3 { font-family: 'Syne', sans-serif; }
-    .prompt-block { background: #111; border: 1px solid #2a2a2a; border-left: 3px solid #c8ff00; padding: 1.5rem; margin: 1rem 0; font-family: 'Space Mono', monospace; font-size: 0.78rem; line-height: 1.8; white-space: pre-wrap; color: #e8e8e0; }
-    .section-header { color: #c8ff00; font-family: 'Syne', sans-serif; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 1.5rem; margin-bottom: 0.3rem; }
-    .tag-chip { display: inline-block; background: #1a1a1a; border: 1px solid #333; color: #c8ff00; padding: 2px 10px; margin: 3px; font-size: 0.75rem; font-family: 'Space Mono', monospace; }
-    .stButton > button { background: #c8ff00; color: #0a0a0a; border: none; font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.05em; padding: 0.5rem 1.5rem; }
-    .stButton > button:hover { background: #dfff4f; color: #0a0a0a; }
-    .profile-pill { display: inline-block; background: #c8ff00; color: #0a0a0a; padding: 3px 12px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.15em; margin-bottom: 0.5rem; }
+    html, body, [class*="css"] { font-family: 'Space Mono', monospace; background-color: #f5f5f0; color: #111111; }
+    .stApp { background-color: #f5f5f0; }
+    h1, h2, h3 { font-family: 'Syne', sans-serif; color: #111111; }
+    p, li, span, label, div { color: #111111; }
+    .stMarkdown p { color: #111111; }
+    .stCaption p { color: #555555 !important; }
+    .prompt-block { background: #ffffff; border: 1px solid #d0d0c8; border-left: 4px solid #1a1a1a; padding: 1.5rem; margin: 1rem 0; font-family: 'Space Mono', monospace; font-size: 0.78rem; line-height: 1.8; white-space: pre-wrap; color: #111111; }
+    .section-header { color: #1a1a1a; font-family: 'Syne', sans-serif; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 1.5rem; margin-bottom: 0.3rem; border-bottom: 2px solid #1a1a1a; padding-bottom: 2px; }
+    .tag-chip { display: inline-block; background: #1a1a1a; border: 1px solid #1a1a1a; color: #f5f5f0; padding: 2px 10px; margin: 3px; font-size: 0.75rem; font-family: 'Space Mono', monospace; }
+    .stButton > button { background: #1a1a1a; color: #f5f5f0; border: none; font-family: 'Syne', sans-serif; font-weight: 700; letter-spacing: 0.05em; padding: 0.5rem 1.5rem; }
+    .stButton > button:hover { background: #333333; color: #f5f5f0; }
+    .profile-pill { display: inline-block; background: #1a1a1a; color: #f5f5f0; padding: 3px 12px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.7rem; letter-spacing: 0.15em; margin-bottom: 0.5rem; }
+    .stMetric label { color: #555555 !important; }
+    .stMetric [data-testid="metric-container"] { background: #ffffff; border: 1px solid #d0d0c8; padding: 0.5rem; }
+    .stTextArea textarea { background: #ffffff; color: #111111; border: 1px solid #d0d0c8; font-family: 'Space Mono', monospace; font-size: 0.75rem; }
+    .stFileUploader { background: #ffffff; border: 1px solid #d0d0c8; }
+    hr { border-color: #d0d0c8; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -291,7 +299,7 @@ def generate_prompt(description, profile_key, profile, seed=None):
 # UI
 # ═══════════════════════════════════════════════════════
 
-st.markdown("<h1 style='font-size:2rem; letter-spacing:-0.02em; margin-top:-1rem;'>GENERATORE DI PROMPT MUSICALI<br><span style='color:#c8ff00;font-size:1rem;letter-spacing:0.2em;'>BY LOOP507</span></h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:2rem; letter-spacing:-0.02em; margin-top:-1rem; color:#111111;'>GENERATORE DI PROMPT MUSICALI<br><span style='color:#555555;font-size:1rem;letter-spacing:0.2em;'>BY LOOP507</span></h1>", unsafe_allow_html=True)
 st.markdown("---")
 
 col1, col2 = st.columns([1, 1.4], gap="large")
@@ -372,9 +380,9 @@ with col2:
         st.text_area("", value=prompt_text, height=220, label_visibility="collapsed")
     else:
         st.markdown("""
-        <div style='padding: 3rem 1rem; color: #444; font-size: 0.82rem; line-height: 2.2;'>
+        <div style='padding: 3rem 1rem; color: #333333; font-size: 0.82rem; line-height: 2.2; background:#ffffff; border: 1px solid #d0d0c8; border-left: 4px solid #1a1a1a;'>
         Carica un'immagine per generare il prompt musicale strutturato.<br><br>
-        <span style='color:#c8ff00;'>15 profili x 3 varianti = 45 output unici</span><br><br>
+        <strong style='color:#111111;'>15 profili x 3 varianti = 45 output unici</strong><br><br>
         Profili: Urban Night, Nature Calm, Melancholy, Energetic, Dreamy,<br>
         Tension, Jazz Noir, Post Rock, Lo-Fi Hip Hop, Neoclassical,<br>
         Folk Intimista, World Ethnic, Drone Industrial, Synthwave, Cinematic Epic
